@@ -106,7 +106,8 @@ COMPANY_SIZE_MAP = {
 st.markdown('<div class="main-header">India Tech Salary Predictor</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Powered by a Scikit-Learn Preprocessing Pipeline & Advanced Ensemble Regression</div>', unsafe_allow_html=True)
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = "https://job-salary-prediction-india.onrender.com"
+
 
 with st.sidebar:
     st.header("⚙️ System Status")
