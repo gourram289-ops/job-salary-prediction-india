@@ -108,6 +108,7 @@ st.markdown('<div class="sub-header">Powered by a Scikit-Learn Preprocessing Pip
 
 API_URL = "https://job-salary-prediction-india.onrender.com"
 
+
 with st.sidebar:
     st.header("⚙️ System Status")
     try:
