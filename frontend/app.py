@@ -101,25 +101,27 @@ COMPANY_SIZE_MAP = {
 }
 
 # =====================================================
-# Header Section & Sidebar
+# Header Section & Dynamic API Configuration
 # =====================================================
-st.markdown('<div class="main-header">India Tech Salary Predictor</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">🇮🇳 India Tech Salary Predictor</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Powered by a Scikit-Learn Preprocessing Pipeline & Advanced Ensemble Regression</div>', unsafe_allow_html=True)
 
-API_URL = "https://job-salary-prediction-india.onrender.com"
-
+# Automatically pulls from Streamlit Cloud Secrets, falling back to localhost if running locally
+# .rstrip("/") prevents double slashes if a trailing slash is accidentally added to the URL secret
+API_URL = st.secrets.get("API_URL", "http://127.0.0.1:8000").rstrip("/")
 
 with st.sidebar:
     st.header("⚙️ System Status")
     try:
-        health = requests.get(f"{API_URL}/", timeout=2)
+        # Catching all RequestException errors prevents ReadTimeout crashes during Render cold starts
+        health = requests.get(f"{API_URL}/", timeout=3)
         if health.status_code == 200:
             st.success("🟢 Backend API: Online")
         else:
             st.warning("🟡 Backend API: Degraded")
-    except requests.exceptions.ConnectionError:
-        st.error("🔴 Backend API: Offline")
-        st.caption("Please start your FastAPI server (`uvicorn main:app --reload`) to generate predictions.")
+    except requests.exceptions.RequestException:
+        st.warning("🟡 Backend API: Waking Up / Idle")
+        st.caption("Free-tier servers sleep after 15 minutes of inactivity. It takes ~40 seconds to wake up on the first request. Your app will work normally when you click Predict!")
     
     st.markdown("---")
     st.markdown("### About the System")
@@ -208,20 +210,19 @@ with tab_predict:
             "skills_count": skills_count
         }
         
-        with st.spinner("Analyzing candidate profile against market data..."):
+        with st.spinner("Connecting to cloud model and analyzing market data (may take ~40s if the server is waking from sleep)..."):
             try:
-                response = requests.post(f"{API_URL}/predict", json=payload, timeout=5)
+                # 60-second timeout allows sleeping Render containers enough time to initialize
+                response = requests.post(f"{API_URL}/predict", json=payload, timeout=60)
                 
                 if response.status_code == 200:
                     data = response.json()
                     salary = data["predicted_salary_lpa"]
                     
-                    # --- STATISTICAL RANGE CALCULATION ---
-                    # Using half of the model's Mean Absolute Error (MAE = 1.24 LPA) to construct a realistic negotiation band
+                    # Statistical range calculation anchored in the model's MAE (±₹0.62 LPA)
                     error_margin = 0.62
                     lower_bound = max(1.0, round(salary - error_margin, 1))
                     upper_bound = round(salary + error_margin, 1)
-                    # -------------------------------------
                     
                     st.markdown(f"""
                         <div class="prediction-card">
@@ -233,8 +234,10 @@ with tab_predict:
                     """, unsafe_allow_html=True)
                 else:
                     st.error(f"Prediction failed: {response.text}")
-            except requests.exceptions.ConnectionError:
-                st.error("⚠️ Could not connect to the backend API. Ensure your FastAPI server is running on port 8000.")
+            except requests.exceptions.Timeout:
+                st.error("⏱️ Request timed out. The backend server took longer than 60 seconds to wake up. Please click Predict again immediately!")
+            except requests.exceptions.RequestException:
+                st.error("⚠️ Unable to connect to the backend API. Please verify that your Render web service is running.")
 
 # -----------------------------------------------------
 # TAB 2: MODEL ARCHITECTURE & PERFORMANCE
