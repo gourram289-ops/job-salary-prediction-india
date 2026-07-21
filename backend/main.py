@@ -17,8 +17,8 @@ class JobApplicationData(BaseModel):
     company: str = Field(..., example="Infosys")
     company_size: str = Field(..., example="10000+")
     work_mode: str = Field(..., example="Hybrid")
-    experience_years: float = Field(..., ge=0, example=20)
-    skills_count: int = Field(..., ge=1, example=20)
+    experience_years: float = Field(..., ge=0,le=30, example=20)
+    skills_count: int = Field(..., ge=1,le=20, example=20)
 
     model_config = {
         "json_schema_extra": {

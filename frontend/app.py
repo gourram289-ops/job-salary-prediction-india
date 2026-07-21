@@ -92,12 +92,10 @@ STATE_CITY_MAP = {
 }
 
 COMPANY_SIZE_MAP = {
-    "Small (1 - 50 employees)": "1-50",
-    "Medium-Small (51 - 200 employees)": "51-200",
-    "Medium (201 - 500 employees)": "201-500",
-    "Large (501 - 1,000 employees)": "501-1000",
-    "Very Large (1,001 - 5,000 employees)": "1001-5000",
-    "Enterprise (5,000+ employees)": "5000+"
+    "Small-Medium (51 - 200 employees)": "Medium",
+    "Large (501 - 1,000 employees)": "Large",
+    "Enterprise (5,000+ employees)": "Enterprise",
+    "Startup": "Startup"
 }
 
 # =====================================================
@@ -204,7 +202,7 @@ with tab_predict:
             "city": city,
             "state": state,
             "company": company,
-            "company_size": company_size,
+            "company_type": company_size,
             "work_mode": work_mode,
             "experience_years": experience_years,
             "skills_count": skills_count
