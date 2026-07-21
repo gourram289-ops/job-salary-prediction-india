@@ -108,7 +108,7 @@ st.markdown('<div class="sub-header">Powered by a Scikit-Learn Preprocessing Pip
 
 # Automatically pulls from Streamlit Cloud Secrets, falling back to localhost if running locally
 # .rstrip("/") prevents double slashes if a trailing slash is accidentally added to the URL secret
-API_URL = st.secrets.get("API_URL", "http://127.0.0.1:8000").rstrip("/")
+API_URL = st.secrets.get("API_URL", "https://job-salary-prediction-india.onrender.com/").rstrip("/")
 
 with st.sidebar:
     st.header("⚙️ System Status")
