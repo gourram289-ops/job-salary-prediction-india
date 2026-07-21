@@ -202,7 +202,7 @@ with tab_predict:
             "city": city,
             "state": state,
             "company": company,
-            "company_type": company_size,
+            "company_size": company_size,
             "work_mode": work_mode,
             "experience_years": experience_years,
             "skills_count": skills_count
