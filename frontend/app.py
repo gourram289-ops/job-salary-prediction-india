@@ -298,6 +298,6 @@ with tab_model:
         st.markdown("### 📈 Metric Interpretation for Stakeholders")
         st.info("How to interpret these evaluation metrics in the context of Indian tech recruitment:")
         
-        st.markdown("* **$R^2 = 0.9724$:** The model successfully explains **97.24%** of why salaries differ between candidates. Only 2.76% of compensation variation is driven by uncaptured factors (e.g., negotiation skills, urgent hiring bonuses, or interview performance).")
+        st.markdown("* **$R^2 = 0.97241$:** The model successfully explains **97.24%** of why salaries differ between candidates. Only 2.76% of compensation variation is driven by uncaptured factors (e.g., negotiation skills, urgent hiring bonuses, or interview performance).")
         st.markdown("* **$\text{MAE} = 1.239\text{ LPA}$:** When predicting a salary, the baseline error margin is approximately **₹1,23,900 per year**. For a ₹20 LPA role, this represents a highly reliable error margin of just ~6.1%.")
         st.markdown("* **$\text{RMSE} = 1.437\text{ LPA}$:** Because $\text{RMSE}$ squares errors before averaging, its close proximity to the $\text{MAE}$ proves that the model does not suffer from extreme, catastrophic mispredictions on outlier salaries.")
