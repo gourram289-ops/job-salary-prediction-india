@@ -169,7 +169,7 @@ with tab_predict:
             "Python", "Java", "JavaScript", "React", "Node.js", 
             "AWS", "SQL", "C++", "Machine Learning", "Kubernetes"
         ])
-        skills_count = st.number_input("Total Skills Count", min_value=1, max_value=50, value=5, step=1)
+        skills_count = st.number_input("Total Skills Count", min_value=1, max_value=20, value=5, step=1)
         
     with col2:
         st.subheader("🏢 Company & Work")
