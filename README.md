@@ -169,7 +169,7 @@ The current training workflow compares Linear Regression, Random Forest, and XGB
 You can test the live application and explore the backend REST endpoints through the links below:
 
 - 🖥️ Frontend Interactive Dashboard: [Launch on Streamlit Cloud](https://job-salary-prediction-india.streamlit.app/)
-- ⚡ Backend API Documentation (Swagger UI): [Explore API on Render](https://job-salary-prediction-india.onrender.com//docs)
+- ⚡ Backend API Documentation (Swagger UI): [Explore API on Render](https://job-salary-prediction-india.onrender.com/docs)
 - 🔍 Raw Health Check Endpoint: [https://job-salary-prediction-india.onrender.com](https://job-salary-prediction-india.onrender.com/)
 
 ---
