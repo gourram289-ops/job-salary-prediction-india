@@ -218,7 +218,7 @@ with tab_predict:
                     salary = data["predicted_salary_lpa"]
                     
                     # Statistical range calculation anchored in the model's MAE (±₹0.62 LPA)
-                    error_margin = 0.62
+                    error_margin = 0.82
                     lower_bound = max(1.0, round(salary - error_margin, 1))
                     upper_bound = round(salary + error_margin, 1)
                     
