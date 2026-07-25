@@ -126,7 +126,7 @@ COMPANY_SIZE_MAP = {
 # =====================================================
 # Header Section & Dynamic API Configuration
 # =====================================================
-st.markdown('<div class="main-header">🇮🇳 India Tech Salary Predictor</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">India Tech Salary Predictor</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Powered by a Scikit-Learn Preprocessing Pipeline & Advanced Ensemble Regression</div>', unsafe_allow_html=True)
 
 API_URL = st.secrets.get("API_URL", "https://job-salary-prediction-india.onrender.com/").rstrip("/")
@@ -263,7 +263,7 @@ with tab_predict:
                     # ── Append to session_state history ────────────────────────────
                     st.session_state.prediction_history.append({
                         "id": len(st.session_state.prediction_history) + 1,
-                        "🕐 Time": datetime.now().strftime("%H:%M:%S"),
+                        "Time": datetime.now().strftime("%H:%M:%S"),
                         "Job Title": job_title,
                         "Company": company,
                         "Primary Skill": primary_skill,
