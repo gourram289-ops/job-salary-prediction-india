@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import pandas as pd
+from datetime import datetime
 
 # =====================================================
 # Page Configuration & Custom Styling
@@ -73,8 +74,32 @@ st.markdown("""
         font-weight: 500;
         margin-bottom: 0.8rem;
     }
+    .history-header {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1E3A8A;
+        margin-top: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    .history-badge {
+        display: inline-block;
+        background: #059669;
+        color: white;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 2px 10px;
+        border-radius: 999px;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
     </style>
 """, unsafe_allow_html=True)
+
+# =====================================================
+# Session State Initialization for Prediction History
+# =====================================================
+if "prediction_history" not in st.session_state:
+    st.session_state.prediction_history = []
 
 # =====================================================
 # Frontend Mappings & Geographical Data
@@ -104,14 +129,11 @@ COMPANY_SIZE_MAP = {
 st.markdown('<div class="main-header">🇮🇳 India Tech Salary Predictor</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Powered by a Scikit-Learn Preprocessing Pipeline & Advanced Ensemble Regression</div>', unsafe_allow_html=True)
 
-# Automatically pulls from Streamlit Cloud Secrets, falling back to localhost if running locally
-# .rstrip("/") prevents double slashes if a trailing slash is accidentally added to the URL secret
 API_URL = st.secrets.get("API_URL", "https://job-salary-prediction-india.onrender.com/").rstrip("/")
 
 with st.sidebar:
     st.header("⚙️ System Status")
     try:
-        # Catching all RequestException errors prevents ReadTimeout crashes during Render cold starts
         health = requests.get(f"{API_URL}/", timeout=3)
         if health.status_code == 200:
             st.success("🟢 Backend API: Online")
@@ -120,14 +142,26 @@ with st.sidebar:
     except requests.exceptions.RequestException:
         st.warning("🟡 Backend API: Waking Up / Idle")
         st.caption("Free-tier servers sleep after 15 minutes of inactivity. It takes ~40 seconds to wake up on the first request. Your app will work normally when you click Predict!")
-    
+
     st.markdown("---")
     st.markdown("### About the System")
     st.write("This application predicts technology compensation across India in **Lakhs Per Annum (LPA)** based on real-world industry hiring data.")
     st.write("The underlying machine learning pipeline automatically serializes one-hot encoding for categorical variables and median imputation for continuous features.")
-    
+
+    # ── Prediction History Counter in Sidebar ──────────────────────────
     st.markdown("---")
-    st.markdown("### 👨‍💻 About the Developer")
+    history_count = len(st.session_state.prediction_history)
+    st.markdown(f"### 📋 Prediction History")
+    if history_count == 0:
+        st.caption("No predictions yet. Run your first prediction!")
+    else:
+        st.success(f"✅ {history_count} prediction(s) saved this session.")
+        if st.button("🗑️ Clear All History", use_container_width=True):
+            st.session_state.prediction_history = []
+            st.rerun()
+
+    st.markdown("---")
+    st.markdown("### 👨💻 About the Developer")
     st.markdown("""
         <div class="developer-card">
             <div class="developer-name">Ram Gour</div>
@@ -139,7 +173,7 @@ with st.sidebar:
             </div>
         </div>
     """, unsafe_allow_html=True)
-    
+
     st.caption("⚡ Built with FastAPI, Scikit-Learn & Streamlit")
 
 # =====================================================
@@ -153,47 +187,43 @@ tab_predict, tab_model = st.tabs(["🔮 Salary Predictor", "📊 Model Architect
 with tab_predict:
     st.markdown("### Candidate & Role Specifications")
     st.write("Adjust the parameters below to dynamically estimate fair-market compensation based on current industry benchmarks.")
-    
+
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        st.subheader("👨‍💻 Role Details")
+        st.subheader("👨💻 Role Details")
         job_title = st.selectbox("Job Title", [
-            "Software Engineer", "Data Scientist", "DevOps Engineer", 
-            "Product Manager", "Frontend Developer", "Backend Developer", 
+            "Software Engineer", "Data Scientist", "DevOps Engineer",
+            "Product Manager", "Frontend Developer", "Backend Developer",
             "Full Stack Developer", "Machine Learning Engineer"
         ])
         primary_skill = st.selectbox("Primary Skill", [
-            "Python", "Java", "JavaScript", "React", "Node.js", 
+            "Python", "Java", "JavaScript", "React", "Node.js",
             "AWS", "SQL", "C++", "Machine Learning", "Kubernetes"
         ])
         skills_count = st.number_input("Total Skills Count", min_value=1, max_value=20, value=5, step=1)
-        
+
     with col2:
         st.subheader("🏢 Company & Work")
         company = st.selectbox("Company", [
-            "TCS", "Infosys", "Wipro", "Accenture", "Cognizant", 
+            "TCS", "Infosys", "Wipro", "Accenture", "Cognizant",
             "Google", "Microsoft", "Amazon", "Flipkart", "Zomato", "Startup / Other"
         ])
-        
         selected_size_label = st.selectbox("Company Scale", list(COMPANY_SIZE_MAP.keys()))
         company_size = COMPANY_SIZE_MAP[selected_size_label]
-        
         work_mode = st.selectbox("Work Mode", ["Remote", "Hybrid", "On-site"])
-        
+
     with col3:
         st.subheader("📍 Location & Experience")
         education = st.selectbox("Highest Education", [
             "B.Tech/B.E.", "M.Tech/M.E.", "BCA", "MCA", "B.Sc", "M.Sc", "Ph.D."
         ])
-        
         state = st.selectbox("State Jurisdiction", list(STATE_CITY_MAP.keys()))
         city = st.selectbox("Tech Hub City", STATE_CITY_MAP[state])
-        
         experience_years = st.slider("Total Industry Experience (Years)", min_value=0.0, max_value=30.0, value=3.0, step=0.5)
-        
+
     st.markdown("---")
-    
+
     if st.button("⚡ Calculate Predicted Compensation", use_container_width=True, type="primary"):
         payload = {
             "job_title": job_title,
@@ -207,21 +237,20 @@ with tab_predict:
             "experience_years": experience_years,
             "skills_count": skills_count
         }
-        
+
         with st.spinner("Connecting to cloud model and analyzing market data (may take ~40s if the server is waking from sleep)..."):
             try:
-                # 60-second timeout allows sleeping Render containers enough time to initialize
                 response = requests.post(f"{API_URL}/predict", json=payload, timeout=60)
-                
+
                 if response.status_code == 200:
                     data = response.json()
                     salary = data["predicted_salary_lpa"]
-                    
-                    # Statistical range calculation anchored in the model's MAE (±₹0.62 LPA)
+
                     error_margin = 0.82
                     lower_bound = max(1.0, round(salary - error_margin, 1))
                     upper_bound = round(salary + error_margin, 1)
-                    
+
+                    # ── Show Latest Prediction Card ────────────────────────────────
                     st.markdown(f"""
                         <div class="prediction-card">
                             <h3 style="color: #4B5563; margin-bottom: 0rem;">Estimated Market Compensation Band</h3>
@@ -230,12 +259,59 @@ with tab_predict:
                             <p class="metric-subtext">Negotiation window calculated via Linear Regression error variance (±₹0.62 LPA) &nbsp;|&nbsp; Location: {city}, {state}</p>
                         </div>
                     """, unsafe_allow_html=True)
+
+                    # ── Append to session_state history ────────────────────────────
+                    st.session_state.prediction_history.append({
+                        "#": len(st.session_state.prediction_history) + 1,
+                        "🕐 Time": datetime.now().strftime("%H:%M:%S"),
+                        "Job Title": job_title,
+                        "Company": company,
+                        "Primary Skill": primary_skill,
+                        "Experience (Yrs)": experience_years,
+                        "Location": f"{city}, {state}",
+                        "Work Mode": work_mode,
+                        "Education": education,
+                        "Skills Count": skills_count,
+                        "Low (LPA)": f"₹ {lower_bound}",
+                        "High (LPA)": f"₹ {upper_bound}",
+                        "Point Estimate (LPA)": f"₹ {salary:,.2f}",
+                    })
+
                 else:
                     st.error(f"Prediction failed: {response.text}")
+
             except requests.exceptions.Timeout:
                 st.error("⏱️ Request timed out. The backend server took longer than 60 seconds to wake up. Please click Predict again immediately!")
             except requests.exceptions.RequestException:
                 st.error("⚠️ Unable to connect to the backend API. Please verify that your Render web service is running.")
+
+    # ── Prediction History Section ─────────────────────────────────────────
+    if st.session_state.prediction_history:
+        history_count = len(st.session_state.prediction_history)
+        st.markdown(
+            f'<div class="history-header">📋 Prediction History <span class="history-badge">{history_count} result{"s" if history_count > 1 else ""}</span></div>',
+            unsafe_allow_html=True
+        )
+        st.caption("All predictions made in this session are listed below — newest first.")
+
+        # Reverse so latest appears on top
+        history_df = pd.DataFrame(list(reversed(st.session_state.prediction_history)))
+
+        st.dataframe(
+            history_df,
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        # ── CSV Export Button ──────────────────────────────────────────────
+        csv_data = pd.DataFrame(st.session_state.prediction_history).to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="⬇️ Export History as CSV",
+            data=csv_data,
+            file_name=f"salary_predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
 
 # -----------------------------------------------------
 # TAB 2: MODEL ARCHITECTURE & PERFORMANCE
@@ -243,7 +319,7 @@ with tab_predict:
 with tab_model:
     st.markdown("### 🏆 Executive Model Benchmark")
     st.write("During pipeline training, three regression architectures were evaluated using an 80/20 train-test split. **Linear Regression** emerged as the champion model, demonstrating superior generalizability on high-dimensional sparse data.")
-    
+
     col_kpi1, col_kpi2, col_kpi3 = st.columns(3)
     with col_kpi1:
         st.metric(label="Winner R² Score (Accuracy)", value="97.24%", delta="+0.11% vs XGBoost")
@@ -251,11 +327,11 @@ with tab_model:
         st.metric(label="Mean Absolute Error (MAE)", value="₹1.24 LPA", delta="-0.017 vs XGBoost", delta_color="inverse")
     with col_kpi3:
         st.metric(label="Root Mean Squared Error (RMSE)", value="1.437 LPA", delta="-0.028 vs XGBoost", delta_color="inverse")
-        
+
     st.markdown("---")
-    
+
     st.subheader("📊 Cross-Algorithm Evaluation Matrix")
-    
+
     benchmark_data = {
         "Rank": ["🏆 1st (Selected)", "🥈 2nd Place", "🥉 3rd Place"],
         "Algorithm": ["Linear Regression", "XGBoost Regressor", "Random Forest Regressor"],
@@ -268,26 +344,26 @@ with tab_model:
             "Robust bagging against localized training outliers"
         ]
     }
-    
+
     st.dataframe(
         pd.DataFrame(benchmark_data),
         use_container_width=True,
         hide_index=True
     )
-    
+
     st.markdown("---")
-    
+
     col_a, col_b = st.columns(2)
-    
+
     with col_a:
         st.markdown("### 🛠️ Production Preprocessing (`ColumnTransformer`)")
         st.write("The production pipeline serializes preprocessing and modeling into a single `.pkl` artifact to guarantee zero data leakage:")
-        
+
         with st.expander("Categorical Encoding (8 Features)", expanded=True):
             st.markdown("* **Features:** `job_title`, `education`, `primary_skill`, `city`, `state`, `company`, `company_size`, `work_mode`")
             st.markdown("* **Imputation:** `SimpleImputer(strategy='most_frequent')` replaces missing strings with the mode.")
             st.markdown("* **Transformation:** `OneHotEncoder(handle_unknown='ignore')` converts text categories into dense binary matrices without breaking on unseen production labels.")
-            
+
         with st.expander("Numerical Scaling (2 Features)", expanded=False):
             st.markdown("* **Features:** `experience_years`, `skills_count`")
             st.markdown("* **Imputation:** `SimpleImputer(strategy='median')` fills missing numerical entries while remaining robust against extreme salary or experience outliers.")
@@ -295,7 +371,7 @@ with tab_model:
     with col_b:
         st.markdown("### 📈 Metric Interpretation for Stakeholders")
         st.info("How to interpret these evaluation metrics in the context of Indian tech recruitment:")
-        
+
         st.markdown("* **$R^2 = 0.97241$:** The model successfully explains **97.24%** of why salaries differ between candidates. Only 2.76% of compensation variation is driven by uncaptured factors (e.g., negotiation skills, urgent hiring bonuses, or interview performance).")
         st.markdown("* **$\text{MAE} = 1.239\text{ LPA}$:** When predicting a salary, the baseline error margin is approximately **₹1,23,900 per year**. For a ₹20 LPA role, this represents a highly reliable error margin of just ~6.1%.")
         st.markdown("* **$\text{RMSE} = 1.437\text{ LPA}$:** Because $\text{RMSE}$ squares errors before averaging, its close proximity to the $\text{MAE}$ proves that the model does not suffer from extreme, catastrophic mispredictions on outlier salaries.")
