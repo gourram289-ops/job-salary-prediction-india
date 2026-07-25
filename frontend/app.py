@@ -262,7 +262,7 @@ with tab_predict:
 
                     # ── Append to session_state history ────────────────────────────
                     st.session_state.prediction_history.append({
-                        "#": len(st.session_state.prediction_history) + 1,
+                        "id": len(st.session_state.prediction_history) + 1,
                         "🕐 Time": datetime.now().strftime("%H:%M:%S"),
                         "Job Title": job_title,
                         "Company": company,
