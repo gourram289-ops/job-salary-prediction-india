@@ -295,7 +295,7 @@ with tab_predict:
         st.caption("All predictions made in this session are listed below — newest first.")
 
         # Reverse so latest appears on top
-        history_df = pd.DataFrame(list(reversed(st.session_state.prediction_history)))
+        history_df = pd.DataFrame(list(st.session_state.prediction_history))
 
         st.dataframe(
             history_df,
